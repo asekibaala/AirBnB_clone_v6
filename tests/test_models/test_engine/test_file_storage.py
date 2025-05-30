@@ -18,6 +18,7 @@ import json
 import os
 import pep8
 import unittest
+from models import storage
 FileStorage = file_storage.FileStorage
 classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
@@ -113,3 +114,27 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+class TestFileStorageGetCount(unittest.TestCase):
+    def setUp(self):
+        self.state = State(name="TestState")
+        self.state.save()
+
+    def tearDown(self):
+        storage.delete(self.state)
+        storage.save()
+
+    def test_get(self):
+        obj = storage.get(State, self.state.id)
+        self.assertIsNotNone(obj)
+        self.assertEqual(obj.id, self.state.id)
+
+    def test_get_none(self):
+        obj = storage.get(State, "nonexistent_id")
+        self.assertIsNone(obj)
+
+    def test_count(self):
+        count = storage.count(State)
+        all_count = storage.count()
+        self.assertTrue(count >= 1)
+        self.assertTrue(all_count >= count)
